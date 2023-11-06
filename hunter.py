@@ -14,13 +14,15 @@ parser.add_argument("-s", "--shodan", type=str, help="Shodan API Key")
 parser.add_argument("-u", "--urlscan", type=str, help="URLScan API Key")
 parser.add_argument("--scan-type", type=str, default="public", help="URL Scan Type (default: Public")
 parser.add_argument("--no-browser", action="store_true", help="Do not open a browser")
+parser.add_argument("--www", action="store_true", help="Include www. variants of the domain")
 
 args = parser.parse_args()
 shodan_key = args.shodan
 shodan_query = args.query
 urlscan_key = args.urlscan
-no_browser = args.no_browser
 scan_type = args.scan_type
+no_browser = args.no_browser
+include_www = args.www
 
 uuids = {}
 
@@ -103,12 +105,13 @@ def shodan_search(shodan_query, shodan_key, urlscan_key):
                     for domain in domains:
                         url = f"http://{domain}:{port}"
                         url_tls = f"https://{domain}:{port}"
-                        url_www = f"http://www.{domain}:{port}"
-                        url_tls_www = f"https://www.{domain}:{port}"
                         results_to_analyze.add(url)
                         results_to_analyze.add(url_tls)
-                        results_to_analyze.add(url_www)
-                        results_to_analyze.add(url_tls_www)
+                        if include_www:
+                            url_www = f"http://www.{domain}:{port}"
+                            url_tls_www = f"https://www.{domain}:{port}"
+                            results_to_analyze.add(url_www)
+                            results_to_analyze.add(url_tls_www)
     for url in results_to_analyze:
         urlscan_api = urlscan_submission(url, urlscan_key)
         if urlscan_api == 0:
